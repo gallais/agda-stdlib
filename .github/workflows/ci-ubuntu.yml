@@ -58,8 +58,6 @@ jobs:
           mkdir -p doc
           touch doc/user-manual.pdf
           cabal update
-          ${{ env.CABAL_INSTALL }} alex-3.2.5
-          ${{ env.CABAL_INSTALL }} happy-1.19.12
           ${{ env.CABAL_INSTALL }}
           cd ..
 
