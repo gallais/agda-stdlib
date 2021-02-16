@@ -3,20 +3,29 @@ on:
   push:
     branches:
       - master
+      - experimental
   pull_request:
     branches:
       - master
+      - experimental
 
 env:
   GHC_VERSION: 8.6.5
   CABAL_VERSION: 3.2.0.0
-  AGDA_COMMIT: tags/v2.6.1.3
   CABAL_INSTALL: cabal install --overwrite-policy=always --ghc-options='-O2 +RTS -M6G -RTS'
 
 jobs:
   test-stdlib:
     runs-on: ubuntu-latest
     steps:
+      - name: Pick Agda stable
+        if: github.ref == 'refs/heads/master' || github.head_ref == 'master'
+        env: AGDA_COMMIT: tags/v2.6.1.2
+
+      - name: Pick Agda dev
+        if: github.ref == 'refs/heads/experimental' || github.head_ref == 'experimental'
+        env: AGDA_COMMIT: fec60970117acab3aeee56bea88bc38136db6c1b
+
       - name: Cache cabal packages
         uses: actions/cache@v2
         id: cache-cabal
@@ -38,24 +47,19 @@ jobs:
       - name: Put cabal programs in PATH
         run: echo "~/.cabal/bin" >> $GITHUB_PATH
 
-      - name: Download Agda from github
-        if: steps.cache-cabal.outputs.cache-hit != 'true'
-        uses: actions/checkout@v2
-        with:
-          repository: agda/agda
-          path: agda
-          ref: ${{ env.AGDA_COMMIT }}
-
-      - name: Install Agda
+      - name: Download and install Agda from github
         if: steps.cache-cabal.outputs.cache-hit != 'true'
         run: |
+          git clone https://github.com/agda/agda --depth=1
+          cd agda
+          git checkout ${{ env.AGDA_COMMIT }}
           cabal update
           ${{ env.CABAL_INSTALL }} alex-3.2.5
           ${{ env.CABAL_INSTALL }} happy-1.19.12
-          cd agda
           mkdir -p doc
           touch doc/user-manual.pdf
           ${{ env.CABAL_INSTALL }}
+          cd ..
 
      # Download and test stdlib
       - name: Checkout stdlib
