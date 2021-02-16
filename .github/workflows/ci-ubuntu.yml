@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - master
-      - '*'
   pull_request:
     branches:
       - master
@@ -29,7 +28,7 @@ jobs:
             ~/.cabal/store
             ~/.cabal/bin
             dist-newstyle
-           key: ${{ runner.os }}-${{ GHC_VERSION }}-${{ CABAL_VERSION }}-${{ AGDA_COMMIT }}
+          key: ${{ runner.os }}-${{ GHC_VERSION }}-${{ CABAL_VERSION }}-${{ AGDA_COMMIT }}
 
       - name: Install cabal
         if: steps.cache-cabal.outputs.cache-hit != 'true'
