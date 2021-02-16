@@ -11,9 +11,7 @@ env:
   GHC_VERSION: 8.6.5
   CABAL_VERSION: 3.2.0.0
   AGDA_COMMIT: tags/v2.6.1.3
-  GHC_OPTIONS: '-O2 +RTS -M6G -RTS'
-  CABAL_OPTIONS: --overwrite-policy=always --ghc-options=${{ env.GHC_OPTIONS }}
-  CABAL_INSTALL: cabal install ${{ env.CABAL_OPTIONS }}
+  CABAL_INSTALL: cabal install --overwrite-policy=always --ghc-options='-O2 +RTS -M6G -RTS'
 
 jobs:
   test-stdlib:
