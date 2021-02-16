@@ -20,11 +20,13 @@ jobs:
     steps:
       - name: Pick Agda stable
         if: github.ref == 'refs/heads/master' || github.head_ref == 'master'
-        env: AGDA_COMMIT: tags/v2.6.1.2
+        env:
+          AGDA_COMMIT: tags/v2.6.1.2
 
       - name: Pick Agda dev
         if: github.ref == 'refs/heads/experimental' || github.head_ref == 'experimental'
-        env: AGDA_COMMIT: fec60970117acab3aeee56bea88bc38136db6c1b
+        env:
+          AGDA_COMMIT: fec60970117acab3aeee56bea88bc38136db6c1b
 
       - name: Cache cabal packages
         uses: actions/cache@v2
