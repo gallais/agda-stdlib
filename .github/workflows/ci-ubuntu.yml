@@ -23,7 +23,7 @@ jobs:
           if [[ ${{ github.ref }} == 'refs/heads/master' \
              || ${{ github.head_ref }} == 'master' ]]; then
             echo "AGDA_COMMIT=tags/v2.6.1.2" >> $GITHUB_ENV
-          else if [[ ${{ github.ref }} == 'refs/heads/experimental' \
+          elif [[ ${{ github.ref }} == 'refs/heads/experimental' \
                   || ${{ github.head_ref }} == 'experimental' ]]; then
             echo "AGDA_COMMIT=fec60970117acab3aeee56bea88bc38136db6c1b" >> $GITHUB_ENV
           fi
