@@ -55,9 +55,9 @@ jobs:
           ${{ CABAL_INSTALL }} alex-3.2.5
           ${{ CABAL_INSTALL }} happy-1.19.12
           cd agda
-        mkdir -p doc
-        touch doc/user-manual.pdf
-        ${{ CABAL_INSTALL }}
+          mkdir -p doc
+          touch doc/user-manual.pdf
+          ${{ CABAL_INSTALL }}
 
      # Download and test stdlib
       - name: Checkout stdlib
