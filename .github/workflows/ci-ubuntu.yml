@@ -21,10 +21,10 @@ jobs:
       - name: Pick Agda version
         run: |
           if [[ ${{ github.ref }} == 'refs/heads/master' \
-             || ${{ github.head_ref }} == 'master' ]]; then
-            echo "AGDA_COMMIT=tags/v2.6.1.2" >> $GITHUB_ENV
+             || ${{ github.base_ref }} == 'master' ]]; then
+            echo "AGDA_COMMIT=tags/v2.6.1.3" >> $GITHUB_ENV
           elif [[ ${{ github.ref }} == 'refs/heads/experimental' \
-                  || ${{ github.head_ref }} == 'experimental' ]]; then
+                  || ${{ github.base_ref }} == 'experimental' ]]; then
             echo "AGDA_COMMIT=fec60970117acab3aeee56bea88bc38136db6c1b" >> $GITHUB_ENV
           fi
 
@@ -52,7 +52,7 @@ jobs:
       - name: Download and install Agda from github
         if: steps.cache-cabal.outputs.cache-hit != 'true'
         run: |
-          git clone https://github.com/agda/agda --depth=1
+          git clone https://github.com/agda/agda
           cd agda
           git checkout ${{ env.AGDA_COMMIT }}
           cabal update
