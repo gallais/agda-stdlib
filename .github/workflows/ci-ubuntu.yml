@@ -36,6 +36,7 @@ jobs:
           path: |
             ~/.cabal/packages
             ~/.cabal/store
+            ~/.cabal/lib
             ~/.cabal/bin
             dist-newstyle
           key: ${{ runner.os }}-${{ env.GHC_VERSION }}-${{ env.CABAL_VERSION }}-${{ env.AGDA_COMMIT }}
@@ -59,7 +60,7 @@ jobs:
           mkdir -p doc
           touch doc/user-manual.pdf
           cabal update
-          ${{ env.CABAL_INSTALL }}
+          ${{ env.CABAL_INSTALL }} --only-dependencies
           cd ..
 
      # # Download and test stdlib
