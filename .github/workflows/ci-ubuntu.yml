@@ -14,6 +14,7 @@ env:
   GHC_VERSION: 8.6.5
   CABAL_VERSION: 3.2.0.0
   CABAL_INSTALL: cabal install --overwrite-policy=always --ghc-options='-O1 +RTS -M6G -RTS'
+  AGDA: agda -Werror +RTS -M3.5G -H3.5G -A128M -RTS -i. -i src/
 
 jobs:
   test-stdlib:
@@ -53,7 +54,7 @@ jobs:
         run: cabal update
 
       - name: Download and install Agda from github
-        # if: steps.cache-cabal.outputs.cache-hit != 'true'
+        if: steps.cache-cabal.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/agda/agda
           cd agda
@@ -71,7 +72,14 @@ jobs:
         run: |
           cabal install agda-stdlib-utils.cabal
           cabal run GenerateEverything
-          agda -i. Everything.agda
+          cp travis/* .
+          ./index.sh
+          ${{ env.AGDA }} --safe EverythingSafeGuardedness.agda
+          ${{ env.AGDA }} --safe EverythingSafeSizedTypes.agda
+          ${{ env.AGDA }} -c --no-main Everything.agda
+          ${{ env.AGDA }} -c README/Foreign/Haskell.agda && ./Haskell
+          ${{ env.AGDA }} --html safe.agda
+          ${{ env.AGDA }} --html index.agda
 
       # - name: Deploy html to github pages
       #   uses: peaceiris/actions-gh-pages@v3
