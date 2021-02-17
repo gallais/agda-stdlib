@@ -70,7 +70,7 @@ jobs:
       - name: Test stdlib
         run: |
           cabal install agda-stdlib-utils.cabal
-          cabal run GenerateEverything.hs
+          cabal run GenerateEverything
           agda -i. Everything.agda
 
       # - name: Deploy html to github pages
