@@ -36,9 +36,7 @@ jobs:
           path: |
             ~/.cabal/packages
             ~/.cabal/store
-            ~/.cabal/lib
             ~/.cabal/bin
-            dist-newstyle
           key: ${{ runner.os }}-${{ env.GHC_VERSION }}-${{ env.CABAL_VERSION }}-${{ env.AGDA_COMMIT }}
 
       - name: Install cabal
@@ -51,15 +49,17 @@ jobs:
       - name: Put cabal programs in PATH
         run: echo "~/.cabal/bin" >> $GITHUB_PATH
 
+      - name: Cabal update
+        run: cabal update
+
       - name: Download and install Agda from github
-        if: steps.cache-cabal.outputs.cache-hit != 'true'
+        # if: steps.cache-cabal.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/agda/agda
           cd agda
           git checkout ${{ env.AGDA_COMMIT }}
           mkdir -p doc
           touch doc/user-manual.pdf
-          cabal update
           ${{ env.CABAL_INSTALL }}
           cd ..
 
