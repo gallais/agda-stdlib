@@ -12,7 +12,7 @@ on:
 ## See 'Pick Agda version' for branch-specific commit selection
 env:
   GHC_VERSION: 8.8.4
-  CABAL_VERSION: 3.2.0.0
+  CABAL_VERSION: 3.0.0.0
   CABAL_INSTALL: cabal install --overwrite-policy=always --ghc-options='-O2 +RTS -M6G -RTS'
 
 jobs:
