@@ -52,7 +52,7 @@ jobs:
         run: echo "~/.cabal/bin" >> $GITHUB_PATH
 
       - name: Download and install Agda from github
-##        if: steps.cache-cabal.outputs.cache-hit != 'true'
+        if: steps.cache-cabal.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/agda/agda
           cd agda
@@ -63,17 +63,18 @@ jobs:
           ${{ env.CABAL_INSTALL }}
           cd ..
 
-     # # Download and test stdlib
-     #  - name: Checkout stdlib
-     #    uses: actions/checkout@v2
+     # Download and test stdlib
+      - name: Checkout stdlib
+        uses: actions/checkout@v2
 
-     #  - name: Test stdlib
-     #    run: |
-     #      cabal install agda-stdlib-utils.cabal
-     #      runghc GenerateEverything.hs
+      - name: Test stdlib
+        run: |
+          cabal install agda-stdlib-utils.cabal
+          runghc GenerateEverything.hs
+          agda -i. Everything.agda
 
-     #  - name: Deploy html to github pages
-     #    uses: peaceiris/actions-gh-pages@v3
-     #    with:
-     #      github_token: ${{ secrets.GITHUB_TOKEN }}
-     #      publish_dir: html/
+      # - name: Deploy html to github pages
+      #   uses: peaceiris/actions-gh-pages@v3
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: html/
