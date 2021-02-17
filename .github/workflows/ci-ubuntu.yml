@@ -59,7 +59,7 @@ jobs:
           mkdir -p doc
           touch doc/user-manual.pdf
           cabal update
-          ${{ env.CABAL_INSTALL }}
+          ${{ env.CABAL_INSTALL }} --only-dependencies
           cd ..
 
      # # Download and test stdlib
