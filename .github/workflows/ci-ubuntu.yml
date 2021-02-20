@@ -86,8 +86,6 @@ jobs:
           ${{ env.AGDA }} -c --no-main --ghc-dont-call-ghc --compile-dir=tmp Everything.agda
           cd tmp
           yes | cabal init --interactive
-          sed -i '3d' tmp.cabal
-          sed -i "s/,/\\n                     ,/g" tmp.cabal
           head -n -17 tmp.cabal > tmp
           mv tmp tmp.cabal
           cat ../travis/ghc-options >> tmp.cabal
