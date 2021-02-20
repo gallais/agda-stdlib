@@ -1,0 +1,4 @@
+
+  ghc-options: -Werror
+               -fwarn-incomplete-patterns
+               -fno-warn-overlapping-pattern
