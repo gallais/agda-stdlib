@@ -18,11 +18,12 @@ open import Data.Fin.Patterns
 open import Data.Nat.Base as ℕ using (ℕ; zero; suc; s≤s; z≤n; _∸_)
 import Data.Nat.Properties as ℕₚ
 open import Data.Unit using (tt)
-open import Data.Product using (∃; ∃₂; ∄; _×_; _,_; map; proj₁; uncurry; <_,_>)
+open import Data.Product using (Σ-syntax; ∃; ∃₂; ∄; _×_; _,_; map; proj₁; uncurry; <_,_>)
 open import Data.Sum.Base as Sum using (_⊎_; inj₁; inj₂; [_,_]; [_,_]′)
 open import Data.Sum.Properties using ([,]-map-commute; [,]-∘-distr)
 open import Function.Base using (_∘_; id; _$_)
 open import Function.Bundles using (_↔_; mk↔′)
+open import Function.Definitions.Core2 using (Surjective)
 open import Function.Equivalence using (_⇔_; equivalence)
 open import Function.Injection using (_↣_)
 open import Relation.Binary as B hiding (Decidable; _⇔_)
@@ -531,6 +532,35 @@ splitAt-≥ (suc m) (suc i) (s≤s i≥m) = cong (Sum.map suc id) (splitAt-≥ m
 +↔⊎ {m} {n} = mk↔′ (splitAt m {n}) (join m n) (splitAt-join m n) (join-splitAt m n)
 
 ------------------------------------------------------------------------
+-- remQuot
+------------------------------------------------------------------------
+
+-- Fin (m * n) ↔ Fin m × Fin n
+
+remQuot-combine : ∀ {n k} (x : Fin n) y → remQuot k (combine x y) ≡ (x , y)
+remQuot-combine {suc n} {k} 0F y rewrite splitAt-inject+ k (n ℕ.* k) y = refl
+remQuot-combine {suc n} {k} (suc x) y rewrite splitAt-raise k (n ℕ.* k) (combine x y) = cong (Data.Product.map₁ suc) (remQuot-combine x y)
+
+combine-remQuot : ∀ {n} k (i : Fin (n ℕ.* k)) → uncurry combine (remQuot {n} k i) ≡ i
+combine-remQuot {suc n} k i with splitAt k i | P.inspect (splitAt k) i
+... | inj₁ j | P.[ eq ] = begin
+  join k (n ℕ.* k) (inj₁ j)      ≡˘⟨ cong (join k (n ℕ.* k)) eq ⟩
+  join k (n ℕ.* k) (splitAt k i) ≡⟨ join-splitAt k (n ℕ.* k) i ⟩
+  i                              ∎
+  where open ≡-Reasoning
+... | inj₂ j | P.[ eq ] = begin
+  raise {n ℕ.* k} k (uncurry combine (remQuot {n} k j)) ≡⟨ cong (raise k) (combine-remQuot {n} k j) ⟩
+  join k (n ℕ.* k) (inj₂ j)                             ≡˘⟨ cong (join k (n ℕ.* k)) eq ⟩
+  join k (n ℕ.* k) (splitAt k i)                        ≡⟨ join-splitAt k (n ℕ.* k) i ⟩
+  i                                                     ∎
+  where open ≡-Reasoning
+
+------------------------------------------------------------------------
+-- Bundles
+*↔× : ∀ {m n} → Fin (m ℕ.* n) ↔ (Fin m × Fin n)
+*↔× {m} {n} = mk↔′ (remQuot {m} n) (uncurry combine) (uncurry remQuot-combine) (combine-remQuot {m} n)
+
+------------------------------------------------------------------------
 -- lift
 ------------------------------------------------------------------------
 
@@ -645,6 +675,22 @@ punchOut-punchIn (suc i) {suc j} = cong suc (begin
   punchOut (punchInᵢ≢i i j ∘ sym)                             ≡⟨ punchOut-punchIn i ⟩
   j                                                           ∎)
   where open ≡-Reasoning
+
+
+------------------------------------------------------------------------
+-- pinch
+------------------------------------------------------------------------
+
+pinch-surjective : ∀ {m} (i : Fin m) → Surjective _≡_ (pinch i)
+pinch-surjective _       zero    = zero , refl
+pinch-surjective zero    (suc j) = suc (suc j) , refl
+pinch-surjective (suc i) (suc j) = map suc (cong suc) (pinch-surjective i j)
+
+pinch-mono-≤ : ∀ {m} (i : Fin m) → (pinch i) Preserves _≤_ ⟶ _≤_
+pinch-mono-≤ 0F      {0F}    {k}     0≤n       = z≤n
+pinch-mono-≤ 0F      {suc j} {suc k} (s≤s j≤k) = j≤k
+pinch-mono-≤ (suc i) {0F}    {k}     0≤n       = z≤n
+pinch-mono-≤ (suc i) {suc j} {suc k} (s≤s j≤k) = s≤s (pinch-mono-≤ i j≤k)
 
 ------------------------------------------------------------------------
 -- Quantification

@@ -18,7 +18,7 @@ open import Data.Nat.Properties.Core using (≤-pred)
 open import Data.Product as Product using (_×_; _,_)
 open import Data.Sum.Base as Sum using (_⊎_; inj₁; inj₂; [_,_]′)
 open import Function.Base using (id; _∘_; _on_)
-open import Level using () renaming (zero to ℓ₀)
+open import Level using (0ℓ)
 open import Relation.Nullary using (yes; no)
 open import Relation.Nullary.Decidable.Core using (True; toWitness)
 open import Relation.Binary.Core
@@ -143,6 +143,15 @@ quotRem {suc n} k i with splitAt k i
 ... | inj₁ j = j , zero
 ... | inj₂ j = Product.map₂ suc (quotRem {n} k j)
 
+-- a variant of quotRem the type of whose result matches the order of multiplication
+remQuot : ∀ {n} k → Fin (n ℕ.* k) → Fin n × Fin k
+remQuot k = Product.swap ∘ quotRem k
+
+-- inverse of remQuot
+combine : ∀ {n k} → Fin n → Fin k → Fin (n ℕ.* k)
+combine {suc n} {k} zero y = inject+ (n ℕ.* k) y
+combine {suc n} {k} (suc x) y = raise k (combine x y)
+
 ------------------------------------------------------------------------
 -- Operations
 
@@ -231,16 +240,30 @@ punchIn zero    j       = suc j
 punchIn (suc i) zero    = zero
 punchIn (suc i) (suc j) = suc (punchIn i j)
 
+-- The function f(i,j) such that f(i,j) = if j≤i then j else j-1
+
+pinch : ∀ {n} → Fin n → Fin (suc n) → Fin n
+pinch {suc n} _       zero    = zero
+pinch {suc n} zero    (suc j) = j
+pinch {suc n} (suc i) (suc j) = suc (pinch i j)
+
 ------------------------------------------------------------------------
 -- Order relations
 
-infix 4 _≤_ _<_
+infix 4 _≤_ _≥_ _<_ _>_
 
-_≤_ : ∀ {n} → Rel (Fin n) ℓ₀
+_≤_ : ∀ {n} → Rel (Fin n) 0ℓ
 _≤_ = ℕ._≤_ on toℕ
 
-_<_ : ∀ {n} → Rel (Fin n) ℓ₀
+_≥_ : ∀ {n} → Rel (Fin n) 0ℓ
+_≥_ = ℕ._≥_ on toℕ
+
+_<_ : ∀ {n} → Rel (Fin n) 0ℓ
 _<_ = ℕ._<_ on toℕ
+
+_>_ : ∀ {n} → Rel (Fin n) 0ℓ
+_>_ = ℕ._>_ on toℕ
+
 
 data _≺_ : ℕ → ℕ → Set where
   _≻toℕ_ : ∀ n (i : Fin n) → toℕ i ≺ n

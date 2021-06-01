@@ -4,7 +4,7 @@
 -- An example showing how the Debug.Trace module can be used
 ------------------------------------------------------------------------
 
-{-# OPTIONS --without-K #-}
+{-# OPTIONS --without-K --rewriting --guardedness #-}
 
 module README.Debug.Trace where
 
@@ -59,10 +59,11 @@ div m n    = just (go m m) where
 open import Level using (0ℓ)
 open import IO
 
+main : Main
 main =
   let r = trace "Call to div" (div 4 2)
       j = λ n → trace "Forcing the result wrapped in just." (putStrLn (show n)) in
-  run {a = 0ℓ} (maybe′ j (return _) r)
+  run (maybe′ j (return _) r)
 
 -- We get the following trace where we can see that checking that the
 -- maybe-solution is just-headed does not force the natural number. Once forced,

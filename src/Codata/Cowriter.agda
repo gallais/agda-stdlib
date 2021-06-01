@@ -4,7 +4,7 @@
 -- The Cowriter type and some operations
 ------------------------------------------------------------------------
 
-{-# OPTIONS --without-K --safe --sized-types #-}
+{-# OPTIONS --without-K --sized-types #-}
 
 -- Disabled to prevent warnings from BoundedVec
 {-# OPTIONS --warn=noUserWarning #-}
@@ -17,15 +17,15 @@ open import Codata.Thunk using (Thunk; force)
 open import Codata.Conat
 open import Codata.Delay using (Delay; later; now)
 open import Codata.Stream as Stream using (Stream; _∷_)
-open import Data.Unit
+open import Data.Unit.Base
 open import Data.List.Base using (List; []; _∷_)
 open import Data.List.NonEmpty using (List⁺; _∷_)
 open import Data.Nat.Base as Nat using (ℕ; zero; suc)
 open import Data.Product as Prod using (_×_; _,_)
 open import Data.Sum.Base as Sum using (_⊎_; inj₁; inj₂)
 open import Data.Vec.Base using (Vec; []; _∷_)
-open import Data.Vec.Bounded as Vec≤ using (Vec≤; _,_)
-open import Function
+open import Data.Vec.Bounded.Base as Vec≤ using (Vec≤; _,_)
+open import Function.Base using (_$_; _∘′_; id)
 
 private
   variable

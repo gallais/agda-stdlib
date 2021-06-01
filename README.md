@@ -5,6 +5,9 @@
 The Agda standard library
 =========================
 
+**NOTE**: The library is currently gearing up for the release of v2.6.2 therefore the
+`master` branch is currently only compatible with release candidate 1 of Agda-2.6.2!
+
 The standard library aims to contain all the tools needed to write both
 programs and proofs easily. While we always try and write efficient
 code, we prioritize ease of proof over type-checking and normalization
@@ -71,4 +74,4 @@ If you would like to suggest improvements, feel free to use the `Issues` tab.
 Even better, if you would like to make the improvements yourself, we have instructions
 in [HACKING](https://github.com/agda/agda-stdlib/blob/master/HACKING.md) to help
 you get started. For those who would simply like to help out, issues marked with
-the [status:low-hanging-fruit](https://github.com/agda/agda-stdlib/issues?q=is%3Aopen+is%3Aissue+label%3A%22status%3A+low-hanging-fruit%22) tag are a good starting point.
+the [low-hanging-fruit](https://github.com/agda/agda-stdlib/issues?q=is%3Aopen+is%3Aissue+label%3Alow-hanging-fruit) tag are a good starting point.

@@ -1,16 +1,121 @@
-Version 1.6-dev
-===============
+Version 1.7
+===========
 
-The library has been tested using Agda 2.6.1 and 2.6.1.1.
+The library has been tested using Agda 2.6.2 release candidate 1.
 
 Highlights
 ----------
 
+* New module for making system calls during type checking, `Reflection.External`,
+  which re-exports `Agda.Builtin.Reflection.External`.
+  
+* New predicate for lists that are enumerations their type in
+  `Data.List.Relation.Unary.Enumerates`.
+  
+* New weak induction schemes in `Data.Fin.Induction` that allows one to avoid 
+  the complicated use of `Acc`/`inject`/`raise` when proving inductive properties
+  over finite sets.
+
 Bug-fixes
 ---------
 
+* Added missing module `Function.Metric` which re-exports
+  `Function.Metric.(Core/Definitions/Structures/Bundles)`. This module was referred
+  to in the documentation of its children but until now was not present.
+
+* Added missing fixity declaration to `_<_` in 
+  `Relation.Binary.Construct.NonStrictToStrict`.
+
 Non-backwards compatible changes
 --------------------------------
+
+#### Floating-point arithmetic
+
+* The functions in `Data.Float.Base` were updated following changes upstream,
+  in `Agda.Builtin.Float`, see <https://github.com/agda/agda/pull/4885>.
+
+* The bitwise binary relations on floating-point numbers (`_<_`, `_≈ᵇ_`, `_==_`)
+  have been removed without replacement, as they were deeply unintuitive, 
+  e.g., `∀ x → x < -x`.
+
+#### Reflection
+
+* The representation of reflected syntax in `Reflection.Term`,
+  `Reflection.Pattern`, `Reflection.Argument` and
+  `Reflection.Argument.Information` has been updated to match the new
+  representation used in Agda 2.6.2. Specifically, the following
+  changes were made:
+
+  * The type of the `var` constructor of the `Pattern` datatype has
+    been changed from `(x : String) → Pattern` to `(x : Int) →
+    Pattern`.
+
+  * The type of the `dot` constructor of the `Pattern` datatype has
+    been changed from `Pattern` to `(t : Term) → Pattern`.
+
+  * The types of the `clause` and `absurd-clause` constructors of the
+    `Clause` datatype now take an extra argument `(tel : Telescope)`,
+    where `Telescope = List (String × Arg Type)`.
+
+  * The following constructors have been added to the `Sort` datatype:
+    `prop : (t : Term) → Sort`, `propLit : (n : Nat) → Sort`, and
+    `inf : (n : Nat) → Sort`.
+
+  * In `Reflection.Argument.Information` the function `relevance` was
+    replaced by `modality`.
+
+  * The type of the `arg-info` constructor is now
+    `(v : Visibility) (m : Modality) → ArgInfo`.
+
+  * In `Reflection.Argument` (as well as `Reflection`) there is a new
+    pattern synonym `defaultModality`, and the pattern synonyms
+    `vArg`, `hArg` and `iArg` have been changed.
+
+  * Two new modules have been added, `Reflection.Argument.Modality`
+    and `Reflection.Argument.Quantity`. The constructors of the types
+    `Modality` and `Quantity` are reexported from `Reflection`.
+
+#### Sized types
+
+* Sized types are no longer considered safe in Agda 2.6.2. As a
+  result, all modules that use `--sized-types` no longer have the
+  `--safe` flag.  For a full list of affected modules, refer to the
+  relevant [commit](https://github.com/agda/agda-stdlib/pull/1465/files#diff-e1c0e3196e4cea6ff808f5d2906031a7657130e10181516206647b83c7014584R91-R131.)
+
+* In order to keep `Data.Nat.Pseudorandom.LCG` safe, the function
+  `stream` that relies on the newly unsafe `Codata` modules has
+  been moved to the new module `Data.Nat.Pseudorandom.LCG.Unsafe`.
+
+* In order to avoid the unsafe usage of the `--sized-types` in the
+  `Codata.Musical` directory, the functions `fromMusical` and
+  `toMusical` defined in:
+  ```
+  Codata.Musical.Colist
+  Codata.Musical.Conat
+  Codata.Musical.Cofin
+  Codata.Musical.M
+  Codata.Musical.Stream
+  ```
+  have been moved to a new module `Codata.Musical.Conversion` and renamed to
+  ```
+  fromMusicalColist/toMusicalColist
+  fromMusicalConat/toMusicalConat
+  fromMusicalCofin/toMusicalCofin
+  fromMusicalM/toMusicalM
+  fromMusicalStream/toMusicalStream
+  ```
+  respectively.
+
+#### Other
+
+* Replaced existing O(n) implementation of `Data.Nat.Binary.fromℕ` with a new O(log n)
+  implementation. The old implementation is maintained under `Data.Nat.Binary.fromℕ'`
+  and proven to be equivalent to the new one.
+
+* `Data.Maybe.Base` now re-exports the definition of `Maybe` given by
+  `Agda.Builtin.Maybe`. The `Foreign.Haskell` modules and definitions
+  corresponding to `Maybe` have been removed. See the release notes of
+  Agda 2.6.2 for more information.
 
 Deprecated modules
 ------------------
@@ -18,203 +123,94 @@ Deprecated modules
 Deprecated names
 ----------------
 
-* In `Data.Nat.Properties`:
-  ```agda
-  m≤n⇒n⊔m≡n   ↦  m≥n⇒m⊔n≡m
-  m≤n⇒n⊓m≡m   ↦  m≥n⇒m⊓n≡n
-  n⊔m≡m⇒n≤m   ↦  m⊔n≡n⇒m≤n
-  n⊔m≡n⇒m≤n   ↦  m⊔n≡m⇒n≤m
-  n≤m⊔n       ↦  m≤n⊔m
-  ⊔-least     ↦  ⊔-lub
-  ⊓-greatest  ↦  ⊓-glb
-  ⊔-pres-≤m   ↦  ⊔-lub
-  ⊓-pres-m≤   ↦  ⊓-glb
-  ⊔-abs-⊓     ↦  ⊔-absorbs-⊓
-  ⊓-abs-⊔     ↦  ⊓-absorbs-⊔
-  ```
-
-* In `Data.Integer.Properties`:
-  ```agda
-  m≤n⇒m⊓n≡m  ↦  i≤j⇒i⊓j≡i
-  m⊓n≡m⇒m≤n  ↦  i⊓j≡i⇒i≤j
-  m≥n⇒m⊓n≡n  ↦  i≥j⇒i⊓j≡j
-  m⊓n≡n⇒m≥n  ↦  i⊓j≡j⇒j≤i
-  m⊓n≤n      ↦  i⊓j≤j
-  m⊓n≤m      ↦  i⊓j≤i
-  m≤n⇒m⊔n≡n  ↦  i≤j⇒i⊔j≡j
-  m⊔n≡n⇒m≤n  ↦  i⊔j≡j⇒i≤j
-  m≥n⇒m⊔n≡m  ↦  i≥j⇒i⊔j≡i
-  m⊔n≡m⇒m≥n  ↦  i⊔j≡i⇒j≤i
-  m≤m⊔n      ↦  i≤i⊔j
-  n≤m⊔n      ↦  i≤j⊔i
-  ```
-
 New modules
 -----------
 
-* Specifications for min and max operators
+* New module for making system calls during type checking:
+  ```agda
+  Reflection.External
   ```
-  Algebra.Construct.NaturalChoice.MinOp
-  Algebra.Construct.NaturalChoice.MaxOp
+
+* New modules for universes and annotations of reflected syntax:
+  ```
+  Reflection.Universe
+  Reflection.Annotated
+  Reflection.Annotated.Free
+  ```
+
+* Added new module for unary relations over sized types now that `Size`
+  lives in it's own universe since Agda 2.6.2.
+  ```agda
+  Relation.Unary.Sized
+  ```
+
+* Metrics specialised to co-domains with rational numbers:
+  ```
+  Function.Metric.Rational
+  Function.Metric.Rational.Definitions
+  Function.Metric.Rational.Structures
+  Function.Metric.Rational.Bundles
+  ```
+
+* Lists that contain every element of a type:
+  ```
+  Data.List.Relation.Unary.Enumerates.Setoid
+  Data.List.Relation.Unary.Enumerates.Setoid.Properties
   ```
 
 Other minor additions
 ---------------------
 
-* Added new function in `Data.List.Base`:
+* Added new relations to `Data.Fin.Base`:
   ```agda
-  last : List A → Maybe A
+  _≥_ = ℕ._≥_ on toℕ
+  _>_ = ℕ._>_ on toℕ
   ```
 
-* Added new proofs in `Data.List.Relation.Unary.All.Properties`:
+* Added new proofs to `Data.Fin.Induction`:
   ```agda
-  head⁺ : All P xs → Maybe.All P (head xs)
-  tail⁺ : All P xs → Maybe.All (All P) (tail xs)
-  last⁺ : All P xs → Maybe.All P (last xs)
-
-  uncons⁺ : All P xs → Maybe.All (P ⟨×⟩ All P) (uncons xs)
-  uncons⁻ : Maybe.All (P ⟨×⟩ All P) (uncons xs) → All P xs
-  unsnoc⁺ : All P xs → Maybe.All (All P ⟨×⟩ P) (unsnoc xs)
-  unsnoc⁻ : Maybe.All (All P ⟨×⟩ P) (unsnoc xs) → All P xs
-
-  dropWhile⁺ : (Q? : Decidable Q) → All P xs → All P (dropWhile Q? xs)
-  dropWhile⁻ : (P? : Decidable P) → dropWhile P? xs ≡ [] → All P xs
-  takeWhile⁺ : (Q? : Decidable Q) → All P xs → All P (takeWhile Q? xs)
-  takeWhile⁻ : (P? : Decidable P) → takeWhile P? xs ≡ xs → All P xs
-
-  all-head-dropWhile : (P? : Decidable P) → ∀ xs → Maybe.All (∁ P) (head (dropWhile P? xs))
-  all-takeWhile      : (P? : Decidable P) → ∀ xs → All P (takeWhile P? xs)
+  >-wellFounded   : WellFounded {A = Fin n} _>_
+  
+  <-weakInduction : P zero      → (∀ i → P (inject₁ i) → P (suc i)) → ∀ i → P i
+  >-weakInduction : P (fromℕ n) → (∀ i → P (suc i) → P (inject₁ i)) → ∀ i → P i
   ```
 
-* Added new proofs to `Data.Nat.DivMod`:
+* Added new proofs to `Relation.Binary.Properties.Setoid`:
   ```agda
-  m<n⇒m/n≡0     : m < n → (m / n) {n≢0} ≡ 0
-  m/n≡1+[m∸n]/n : m ≥ n → (m / n) {n≢0} ≡ 1 + ((m ∸ n) / n) {n≢0}
-  /-cancelˡ     : ((m * n) / (m * o)) {mo≢0} ≡ (n / o) {o≢0}
+  respʳ-flip : _≈_ Respectsʳ (flip _≈_)
+  respˡ-flip : _≈_ Respectsˡ (flip _≈_)
   ```
 
-* Added new operations to `Data.Fin.Subset`:
-  ```
-  _─_ : Op₂ (Subset n)
-  _-_ : Subset n → Fin n → Subset n
-  ```
-
-* Added new proofs to `Data.Fin.Subset.Properties`:
-  ```
-  s⊂s             : p ⊂ q → s ∷ p ⊂ s ∷ q
-  ∣p∣≤∣x∷p∣       : ∣ p ∣ ≤ ∣ x ∷ p ∣
-
-  p─⊥≡p           : p ─ ⊥ ≡ p
-  p─⊤≡⊥           : p ─ ⊤ ≡ ⊥
-  p─q─r≡p─q∪r     : p ─ q ─ r ≡ p ─ (q ∪ r)
-  p─q─r≡p─r─q     : p ─ q ─ r ≡ p ─ r ─ q
-  p─q─q≡p─q       : p ─ q ─ q ≡ p ─ q
-  p─q⊆p           : p ─ q ⊆ p
-  ∣p─q∣≤∣p∣       : ∣ p ─ q ∣ ≤ ∣ p ∣
-  p∩q≢∅⇒p─q⊂p     : Nonempty (p ∩ q) → p ─ q ⊂ p
-  p∩q≢∅⇒∣p─q∣<∣p∣ : Nonempty (p ∩ q) → ∣ p ─ q ∣ < ∣ p ∣
-  x∈p∧x∉q⇒x∈p─q   : x ∈ p → x ∉ q → x ∈ p ─ q
-
-  p─x─y≡p─y─x     : p - x - y ≡ p - y - x
-  x∈p⇒p-x⊂p       : x ∈ p → p - x ⊂ p
-  x∈p⇒∣p-x∣<∣p|   : x ∈ p → ∣ p - x ∣ < ∣ p ∣
-  x∈p∧x≢y⇒x∈p-y   : x ∈ p → x ≢ y → x ∈ p - y
-  ```
-
-* Added new proofs to `Data.Nat.Properties`:
+* Added new function to `Data.Fin.Base`:
   ```agda
-  >⇒≢ : _>_ ⇒ _≢_
-
-  pred[n]≤n : pred n ≤ n
-
-  n<1⇒n≡0 : n < 1 → n ≡ 0
-  m<n⇒0<n : m < n → 0 < n
-
-  m≤n*m : 0 < n → m ≤ n * m
-
-  ⊔-⊓-absorptive            : Absorptive _⊓_ _
-
-  ⊔-⊓-isLattice             : IsLattice _⊔_ _⊓_
-  ⊔-⊓-isDistributiveLattice : IsDistributiveLattice _⊔_ _⊓_
-
-  ⊓-commutativeSemigroup    : CommutativeSemigroup 0ℓ 0ℓ
-  ⊔-commutativeSemigroup    : CommutativeSemigroup 0ℓ 0ℓ
-  ⊔-0-monoid                : Monoid 0ℓ 0ℓ
-  ⊔-⊓-lattice               : Lattice 0ℓ 0ℓ
-  ⊔-⊓-distributiveLattice   : DistributiveLattice 0ℓ 0ℓ
-
-  mono-≤-distrib-⊔          : f Preserves _≤_ ⟶ _≤_ → f (x ⊔ y) ≈ f x ⊔ f y
-  mono-≤-distrib-⊓          : f Preserves _≤_ ⟶ _≤_ → f (x ⊓ y) ≈ f x ⊓ f y
-  antimono-≤-distrib-⊓      : f Preserves _≤_ ⟶ _≥_ → f (x ⊓ y) ≈ f x ⊔ f y
-  antimono-≤-distrib-⊔      : f Preserves _≤_ ⟶ _≥_ → f (x ⊔ y) ≈ f x ⊓ f y
+  pinch : Fin n → Fin (suc n) → Fin n
   ```
 
-* Added new proofs to `Data.Integer.Properties`:
+* Added new proofs to `Data.Fin.Properties`:
   ```agda
-  ⊓-distribˡ-⊔              : _⊓_ DistributesOverˡ _⊔_
-  ⊓-distribʳ-⊔              : _⊓_ DistributesOverʳ _⊔_
-  ⊓-distrib-⊔               : _⊓_ DistributesOver  _⊔_
-  ⊔-distribˡ-⊓              : _⊔_ DistributesOverˡ _⊓_
-  ⊔-distribʳ-⊓              : _⊔_ DistributesOverʳ _⊓_
-  ⊔-distrib-⊓               : _⊔_ DistributesOver  _⊓_
-
-  ⊔-⊓-isDistributiveLattice : IsDistributiveLattice _⊔_ _⊓_
-  ⊓-⊔-isDistributiveLattice : IsDistributiveLattice _⊓_ _⊔_
-
-  ⊔-⊓-distributiveLattice   : DistributiveLattice _ _
-  ⊓-⊔-distributiveLattice   : DistributiveLattice _ _
-
-  ⊓-glb                     : m ≥ o → n ≥ o → m ⊓ n ≥ o
-  ⊓-triangulate             : m ⊓ n ⊓ o ≡ (m ⊓ n) ⊓ (n ⊓ o)
-  ⊓-mono-≤                  : _⊓_ Preserves₂ _≤_ ⟶ _≤_ ⟶ _≤_
-  ⊓-monoˡ-≤                 : (_⊓ n) Preserves _≤_ ⟶ _≤_
-  ⊓-monoʳ-≤                 : (n ⊓_) Preserves _≤_ ⟶ _≤_
-
-  ⊔-lub                     : m ≤ o → n ≤ o → m ⊔ n ≤ o
-  ⊔-triangulate             : m ⊔ n ⊔ o ≡ (m ⊔ n) ⊔ (n ⊔ o)
-  ⊔-mono-≤                  : _⊔_ Preserves₂ _≤_ ⟶ _≤_ ⟶ _≤_
-  ⊔-monoˡ-≤                 : (_⊔ n) Preserves _≤_ ⟶ _≤_
-  ⊔-monoʳ-≤                 : (n ⊔_) Preserves _≤_ ⟶ _≤_
-
-  i≤j⇒i⊓k≤j                 : i ≤ j → i ⊓ k ≤ j
-  i≤j⇒k⊓i≤j                 : i ≤ j → k ⊓ i ≤ j
-  i≤j⊓k⇒i≤j                 : i ≤ j ⊓ k → i ≤ j
-  i≤j⊓k⇒i≤k                 : i ≤ j ⊓ k → i ≤ k
-
-  i≤j⇒i≤j⊔k                 : i ≤ j → i ≤ j ⊔ k
-  i≤j⇒i≤k⊔j                 : i ≤ j → i ≤ k ⊔ j
-  i⊔j≤k⇒i≤k                 : i ⊔ j ≤ k → i ≤ k
-  i⊔j≤k⇒j≤k                 : i ⊔ j ≤ k → j ≤ k
-
-  i⊓j≤i⊔j                   : i ⊓ j ≤ i ⊔ j
+  pinch-surjective : Surjective _≡_ (pinch i)
+  pinch-mono-≤     : (pinch i) Preserves _≤_ ⟶ _≤_
   ```
 
-* Added new proofs to `Relation.Binary.Properties.Poset`:
+* Added new proofs to `Data.Nat.Binary.Properties`:
   ```agda
-  mono⇒cong     : f Preserves _≤_ ⟶ _≤_ → f Preserves _≈_ ⟶ _≈_
-  antimono⇒cong : f Preserves _≤_ ⟶ _≥_ → f Preserves _≈_ ⟶ _≈_
+  fromℕ≡fromℕ'  : fromℕ ≗ fromℕ'
+  toℕ-fromℕ'    : toℕ ∘ fromℕ' ≗ id
+  fromℕ'-homo-+ : fromℕ' (m ℕ.+ n) ≡ fromℕ' m + fromℕ' n
   ```
 
-* Added new proofs in `Data.Rational.Unnormalised.Properties`:
+* Rewrote proofs in `Data.Nat.Binary.Properties` for new implementation of `fromℕ`:
   ```agda
-  *-congˡ : LeftCongruent _≃_ _*_
-  *-congʳ : RightCongruent _≃_ _*_
+  toℕ-fromℕ    : toℕ ∘ fromℕ ≗ id
+  fromℕ-homo-+ : fromℕ (m ℕ.+ n) ≡ fromℕ m + fromℕ n
   ```
 
-* Added new proofs in `Data.Rational.Properties`:
+* Added new proof to `Data.Nat.DivMod`:
   ```agda
-  toℚᵘ-homo-1/ : ∀ p → toℚᵘ (1/ p) ℚᵘ.≃ ℚᵘ.1/ (toℚᵘ p)
-  *-inverseˡ : ∀ p → 1/ p * p ≡ 1ℚ
-  *-inverseʳ : ∀ p → p * 1/ p ≡ 1ℚ
+  m/n≤m : (m / n) {≢0} ≤ m
   ```
 
-* Added new proof to `Data.List.Relation.Unary.All.Properties`:
+* Added new type in `Size`:
   ```agda
-  all-upTo : All (_< n) (upTo n)
-  ```
-
-* Added new definitions to `IO`:
-  ```agda
-  getLine : IO String
-  Main : Set
+  SizedSet ℓ = Size → Set ℓ
   ```

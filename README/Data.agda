@@ -5,6 +5,8 @@
 -- library.
 ------------------------------------------------------------------------
 
+{-# OPTIONS --sized-types --guardedness #-}
+
 module README.Data where
 
 -- The top-level folder `Data` contains all the definitions of datatypes
@@ -212,3 +214,8 @@ import README.Data.Trie.NonDependent
 
 import README.Data.Container.FreeMonad
 import README.Data.Container.Indexed
+
+-- Wrapping n-ary relations into a record definition so type-inference
+-- remembers the things being related.
+
+import README.Data.Wrap
