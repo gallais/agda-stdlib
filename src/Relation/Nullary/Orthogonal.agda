@@ -48,6 +48,9 @@ record _⫫[_]_ (A : Set a) (P : Set p) (B : Set b) : Set (p ⊔ a ⊔ b) where
   co-orthogonal = flip orthogonal
 open _⫫[_]_ public
 
+byOrthogonality : {{A ⫫[ ⊥ ] ¬A}} → A → ¬A → B
+byOrthogonality {{oA}} a ¬a = ⊥-elim (oA .orthogonal a ¬a)
+
 ------------------------------------------------------------------------
 -- Base cases
 
@@ -64,8 +67,10 @@ Truth false .orthogonal = ⊥-elim
 Truth true  .orthogonal = flip ⊥-elim
 
 -- A type is always orthogonal to its negation
-negation : (A : Set a) → A ⫫[ P ] ¬ A
-negation A .orthogonal = contradiction
+instance
+
+  negation : A ⫫[ P ] ¬ A
+  negation .orthogonal = contradiction
 
 -- If our notion of orthogonality is with respect to ⊤ then any
 -- two things are related
