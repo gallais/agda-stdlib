@@ -10,9 +10,9 @@ module Relation.Nullary.Choice where
 
 open import Agda.Builtin.Equality
 
-open import Data.Bool.Base using (Bool; T; true; false; not; if_then_else_; _∧_)
+open import Data.Bool.Base using (Bool; T; true; false; not; if_then_else_; _∧_; _∨_)
 
-open import Data.Empty using (⊥; ⊥-elim-irr)
+open import Data.Empty using (⊥; ⊥-elim; ⊥-elim-irr)
 open import Data.Empty.Polymorphic using () renaming (⊥ to ⊥ˡ)
 open import Data.Product.Base using (_×_; _,_; proj₁; proj₂)
 open import Data.Sum.Base using (_⊎_; inj₁; inj₂; [_,_]′)
@@ -29,16 +29,17 @@ open import Relation.Nullary.Recomputable as Recomputable using (Recomputable)
 
 
 open import Relation.Nullary.Orthogonal
-  using (_⫫[_]_; negation; orthogonal; ∁; _∩_; _!∩_)
+  using (_⫫[_]_; negation; orthogonal; ∁; _∩_; _!∩_; _∪_; _⇒_)
 
 private
   variable
-    ℓa ℓaⁿ ℓb ℓbⁿ p : Level
+    ℓa ℓaⁿ ℓb ℓbⁿ p q : Level
     A : Set ℓa
     ¬A : Set ℓaⁿ
     B : Set ℓb
     ¬B : Set ℓbⁿ
     P : Set p
+    Q : Set q
     oA : A ⫫[ P ] ¬A
     oB : B ⫫[ P ] ¬B
     a b : Bool
@@ -80,14 +81,14 @@ invert (ofⁿ b) = b
 -- Transformation
 
 map : (A → B) → (¬A → ¬B) →
-      Choice A P ¬A oA b → Choice B P ¬B oB b
+      Choice A P ¬A oA b → Choice B Q ¬B oB b
 map f g (ofʸ a) = ofʸ (f a)
 map f g (ofⁿ b) = ofⁿ (g b)
 
-map₁ : (A → B) → Choice A P ¬A oA b → Choice B P ¬A oB b
+map₁ : (A → B) → Choice A P ¬A oA b → Choice B Q ¬A oB b
 map₁ f = map f id
 
-map₂ : (¬A → ¬B) → Choice A P ¬A oA b → Choice A P ¬B oB b
+map₂ : (¬A → ¬B) → Choice A P ¬A oA b → Choice A Q ¬B oB b
 map₂ = map id
 
 ------------------------------------------------------------------------
@@ -169,29 +170,17 @@ ofʸ  a !×-choice ofʸ  b = ofʸ (a , b)
 ofʸ  a !×-choice ofⁿ ¬b = ofⁿ (inj₂ (a , ¬b))
 ofⁿ ¬a !×-choice _      = ofⁿ (inj₁ ¬a)
 
+_⊎-choice_ : Choice A P ¬A oA a → Choice B P ¬B oB b  →
+             Choice (A ⊎ B) P (¬A × ¬B) (oA ∪ oB) (a ∨ b)
+ofʸ  a ⊎-choice      _ = ofʸ (inj₁ a)
+ofⁿ ¬a ⊎-choice ofʸ  b = ofʸ (inj₂ b)
+ofⁿ ¬a ⊎-choice ofⁿ ¬b = ofⁿ (¬a , ¬b)
 
-{-
-infixr 1 _⊎-choice_
-infixr 2 _×-choice_ _→-choice_
-
-_×-choice_ : ∀ {a b} → Choice A a → Choice B b →
-               Choice (A × B) (a ∧ b)
-ofʸ  a ×-choice ofʸ  b = of (a , b)
-ofʸ  a ×-choice ofⁿ ¬b = of (¬b ∘ proj₂)
-ofⁿ ¬a ×-choice _      = of (¬a ∘ proj₁)
-
-_⊎-choice_ : ∀ {a b} → Choice A a → Choice B b →
-               Choice (A ⊎ B) (a ∨ b)
-ofʸ  a ⊎-choice      _ = of (inj₁ a)
-ofⁿ ¬a ⊎-choice ofʸ  b = of (inj₂ b)
-ofⁿ ¬a ⊎-choice ofⁿ ¬b = of (¬a ¬-⊎ ¬b)
-
-_→-choice_ : ∀ {a b} → Choice A a → Choice B b →
-                Choice (A → B) (not a ∨ b)
-ofʸ  a →-choice ofʸ  b = of (const b)
-ofʸ  a →-choice ofⁿ ¬b = of (¬b ∘ (_$ a))
-ofⁿ ¬a →-choice _      = of (λ a → contradiction a ¬a)
--}
+_→-choice_ : Choice A B ¬A oA a → Choice B P ¬B oB b →
+             Choice (A → B) P (A × ¬B) (A ⇒ oB) (not a ∨ b)
+ofʸ  a →-choice ofʸ  b = ofʸ (const b)
+ofʸ  a →-choice ofⁿ ¬b = ofⁿ (a , ¬b)
+_→-choice_ {oA = oA} (ofⁿ ¬a) _ = ofʸ (λ a → oA .orthogonal a ¬a)
 
 ------------------------------------------------------------------------
 -- Other lemmas
@@ -200,14 +189,12 @@ fromEquivalence : ∀ {b} → (T b → A) → (A → T b) → Reflects A b
 fromEquivalence {b = true}  sound complete = of (sound _)
 fromEquivalence {b = false} sound complete = of complete
 
-{-
--- `Choice` is deterministic.
-det : ∀ {b b′} → Choice A b → Choice A b′ → b ≡ b′
+-- `Choice` is deterministic on orthogonal types.
+det : ∀ {b b′} → Choice A ⊥ ¬A oA b → Choice A ⊥ ¬A oA b′ → b ≡ b′
 det (ofʸ  a) (ofʸ  _) = refl
-det (ofʸ  a) (ofⁿ ¬a) = contradiction a ¬a
-det (ofⁿ ¬a) (ofʸ  a) = contradiction a ¬a
+det {oA = oA} (ofʸ  a) (ofⁿ ¬a) = ⊥-elim (oA .orthogonal a ¬a)
+det {oA = oA} (ofⁿ ¬a) (ofʸ  a) = ⊥-elim (oA .orthogonal a ¬a)
 det (ofⁿ ¬a) (ofⁿ  _) = refl
 
-T-choice-elim : ∀ {a b} → Choice (T a) b → b ≡ a
-T-choice-elim {a} r = det r (T-choice a)
--}
+T-reflects-elim : ∀ {a b} → Reflects (T a) b → b ≡ a
+T-reflects-elim {a} r = det r (T-reflects a)
